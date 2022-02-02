@@ -1,0 +1,1 @@
+vagrant package --vagrantfile files\Vagrantfile --output cerepa.box

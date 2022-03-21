@@ -1,0 +1,3 @@
+[submodule "server-config/www-data"]
+	path = server-config/www-data
+	url = https://github.com/CarlosM10011/PredisanEHR-www-data.git

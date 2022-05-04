@@ -49,6 +49,48 @@ DHCP server control panel, and change the default password for SSH:
    access all data if the password is ever compromised.
 6. Type `exit` to log out of the server.
 
-## bahmni-specific documentation
+Bahmni-specific Documentation
+================================================================================
 
-TODO(cdmedrano): Update instructions on installing bahmni on clean centos7.
+At the time of this writing, bahmni, only works on CentOS7. Minor versions above
+CentosOS 7.6 should be fine, but you have to be careful to not update some
+packages, or the entire stack will break in strange and unexplainable ways.
+Despite the official documentation from Bahmni allowing people to upgrade an
+existing install, it's cleaner and easier to start from a fresh install of the
+operating system. As always, Proceed with caution when doing any of these
+operations on a live install. These instructions will likely vary across Bahmni
+versions; they only serve as guidelines, not a procedure that will always work.
+To ensure data Integrity, consider cloning or snapshotting the virtual machine.
+Alternatively, consider creating a new virtual machine for testing a newer version of the
+software to avoid losing the data.
+
+## Bahmni Installation from Scratch
+
+1. Download CentOS 7 minimal from one of the mirrors listed at
+   (http://isoredirect.centos.org/centos/7/isos/x86_64/).
+2. Attach the ISO image to an empty VM, and follow the on-screen instructions
+   after you boot off the ISO image, including selecting timezone, creating
+   users, network configuration, and disk configuration. The default settings
+   should be fine for most options.
+3. After the install finishes, the machine should reboot, and present you with a
+   login screen. Sign in with the configured username and password.
+4. After signing in, enter `sudo yum update`.
+
+Bahmni doesn't like SELinux, so we have to disable it. I don't like turning it
+completely off, so I picked the second best option to set it to permissive.
+
+`suvo vi /etc/sysconfig/selinux`
+
+Change the line `SELINUX=enforcing` to `SELINUX=permissive`.
+
+Enter `reboot` once done.
+5. At this point, you're ready to follow the instructions located at
+   (https://bahmni.atlassian.net/wiki/spaces/BAH/pages/33128505/Install+Bahmni+on+CentOS).
+   Come back to this document after you run the `bahmni install` command.
+
+At this point, Bahmni should be installed on that virtual machine. However, we
+need to disable some packages from upgrading.
+
+`sudo vi /etc/yum.conf`
+
+Under `[main]` somewhere, add the line `exclude=mysql* bahmni* ansible`

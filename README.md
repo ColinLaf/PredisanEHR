@@ -69,7 +69,7 @@ software to avoid losing the data.
 1. Download CentOS 7 minimal from one of the mirrors listed at
    (http://isoredirect.centos.org/centos/7/isos/x86_64/).
 2. Attach the ISO image to an empty VM, and follow the on-screen instructions
-   after you boot off the ISO image, including selecting timezone, creating
+   after booting from the ISO image, including selecting timezone, creatin
    users, network configuration, and disk configuration. The default settings
    should be fine for most options.
 3. After the install finishes, the machine should reboot, and present you with a

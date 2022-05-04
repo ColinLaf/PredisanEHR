@@ -69,7 +69,7 @@ software to avoid losing the data.
 1. Download CentOS 7 minimal from one of the mirrors listed at
    (http://isoredirect.centos.org/centos/7/isos/x86_64/).
 2. Attach the ISO image to an empty VM, and follow the on-screen instructions
-   after booting from the ISO image, including selecting timezone, creatin
+   after booting from the ISO image, including selecting timezone, creating
    users, network configuration, and disk configuration. The default settings
    should be fine for most options.
 3. After the install finishes, the machine should reboot, and present you with a
@@ -84,13 +84,119 @@ completely off, so I picked the second best option to set it to permissive.
 Change the line `SELINUX=enforcing` to `SELINUX=permissive`.
 
 Enter `reboot` once done.
-5. At this point, you're ready to follow the instructions located at
-   (https://bahmni.atlassian.net/wiki/spaces/BAH/pages/33128505/Install+Bahmni+on+CentOS).
-   Come back to this document after you run the `bahmni install` command.
 
-At this point, Bahmni should be installed on that virtual machine. However, we
-need to disable some packages from upgrading.
+At this point, you're ready to follow the instructions located at
+(https://bahmni.atlassian.net/wiki/spaces/BAH/pages/33128505/Install+Bahmni+on+CentOS).
+Come back to this document after you run the `bahmni install` command.
+
+Bahmni should now be installed on the virtual machine. However, we need to
+disable some packages from upgrading, and apply the Predisan-specific changes to
+the system.
+
+### Disable Packages from Upgrading
+
+We need to hold these packages back from upgrading because bahmni installed
+specific versions of them as part of the Ansible playbooks. Moreover, the latest version
+of Ansible currently breaks the Bahmni Ansible Playbooks that the `bahmni` CLI
+tool uses.
+
+To disable them, edit `/etc/yum.conf`:
 
 `sudo vi /etc/yum.conf`
 
-Under `[main]` somewhere, add the line `exclude=mysql* bahmni* ansible`
+Under `[main]` somewhere, add the line `exclude=mysql* bahmni* ansible`.
+
+### Applying Predisan-specific changes
+
+The UI changes made (translations, fields, etc) are stored under
+`/opt/bahmni-web/etc`. To apply these changes:
+
+1. `bahmni -i local stop`
+2. `cd /opt`
+3. `mv bahmni-web bahmni-web_old`
+4. `wget \
+   https://carlos1001.com/predisanehr/predisanehr-prod-0.93/bahmni-web.tar.gz`
+5. `tar xf bahmni-web.tar.gz`
+6. `chown -R bahmni:bahmni bahmni-web`
+7. `bahmni -i local start`
+
+## Backing up the data
+
+Bahmni includes Ansible scripts for backing up data including the DB, but it
+sometimes fails and does not copy all files. Additional research should be done
+to see how safe the ansible playbooks are for production use, but this procedure
+should capture most things.
+
+For data storage, Bahmni uses two databases with Mysql as the dbms, and
+Postgresql for inventory data storage. Data like scanned documents and patient
+images are all stored under `/home/bahmni`
+
+### Backing up the Databases
+
+First, stop Bahmni services by doing `bahmni -i local stop`.
+
+For the `openmrs` and `bahmni_reports` databases, you can use `mysqldump` to
+dump the databases. For example:
+
+```BASH
+mysqldump -u root -p openmrs >openmrs.sql
+mysqldump -u root -p bahmni_reports >bahmni_reports.sql
+```
+
+The passwords can be found at `/etc/bahmni-installer/bahmni.conf`
+
+Restart bahmni services by doing `bahmni -i local start`.
+
+### Backing up all other data
+
+First stop all bahmni services by doing `bahmni -i local stop`.
+
+Most data is under `/home/bahmni`, so:
+
+```BASH
+cd /home
+tar czf data.tar.gz bahmni
+```
+
+You can store that tarball somewhere else or extract it on top of everything
+else to restore.
+
+## Restoring
+
+### Restoring Databases
+
+First, stop all bahmni services by doing `bahmni -i local stop`.
+
+Edit the dumped sql files, and at the top, add the line `use <db_name>`, where
+<db_name> is the name of the database the file is restoring. For example, on top
+of the `openmrs.sql` file, add `use openmrs;`. Do the same with the
+`bahmni_reports.sql` file as well.
+
+You can then pipe in the resulting sql files from `mysqldump` into `mysql`. For
+example:
+
+```BASH
+mysql -u root -p <openmrs.sql
+mysql -u root -p <bahmni_reports.sql
+```
+
+The passwords can be found under `/etc/bahmni-installer/bahmni.conf`
+
+Start all bahmni services by doing `bahmni -i local start`.
+
+### Restoring datafiles
+
+Stop all bahmni services by doing `bahmni -i local stop`.
+
+All datafiles that I could find are found under `/home/bahmni`, so if you
+tarballed the entire home directory, you could do something like:
+
+```BASH
+cd /home
+mv bahmni bahmni_old
+tar xf data.tar.gz
+chown -R bahmni:bahmni bahmni
+```
+
+The `chown` command is to ensure that the bahmni user and group is allowed to
+access all the files restored.

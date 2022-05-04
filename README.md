@@ -1,42 +1,54 @@
-## predisan-specific documentation
+Predisan-specific Documentation
+================================================================================
 
-# installing
+## installing
 
-1. Clone this repo
-2. Download cerepa.box from (http://predisanehr-dev.carlos1001.com/cerepa.box).
-3. Inside of the PredisanEHR directory, open a command prompt and run **vagrant box add cerepa cerepa.box**
-4. In the same command prompt run **vagrant init cerepa**
-5. In the same command prompt run **vagrant up**
+The EMR system is a Hyper-V virtual machine that can run on Windows Server
+2012R2 with some small changes to the vm config to fit the local environment. To
+make it easier to download, the images are compressed and split into 1 GiB
+peaces using 7-zip.
 
-# updating (with new cerepa.box file)
-1. overwrite old cerepa.box file with new one
-2. delete old vagrantfile
-3. Inside of the PredisanEHR directory, open a command prompt and run **vagrant destroy** type y if it asks for confirmation
-4. In the same command prompt run **vagrant box remove cerepa**
-5. In the same command prompt run **vagrant box add cerepa cerepa.box**
-6. In the same command prompt run **vagrant init cerepa**
-7. In the same command prompt run **vagrant up**
+### Instructions
+
+1. Download and install 7-Zip from (https://www.7-zip.org/).
+2. Download both parts from
+   (https://carlos1001.com/predisanehr/predisanehr-prod-0.93/).
+3. Place both parts in the same directory.
+4. Open 7-zip, and find the directory with the two parts.
+5. Right click on part 1, expand 7-zip, and then click on extract to
+   predisanehr-prod-0.93.
+6. Now in Hyper-V Manager, go to import vm, and use the extracted directory as
+   the path to search for vm's.
+7. Finish importing the vm based on the current Hyper-V server configuration.
+
+## After Importing
+
+After importing the vm, go into the vm settings by right clicking the name of
+the vm in Hyper-V Manager and:
+
+- change the network switch to match the local configuration.
+- Verify the MAC address is set to fixed.
+
+Also, even though the vm has 2 processor cores, if the host can support it, it
+is advisable to increase the number of CPU cores from 2 to 4.
+
+After changing the vm settings, you can start the vm. The vm is configured
+to acquire an IP address from a DHCP server, and for all services to start after
+boot. SSH is also enabled. The default username is `predisanehr-admin`, and the
+password is `predisanehr-admin-csc4620`
+
+Once the VM boots, figure out the IP address. You can do this through the
+DHCP server control panel, and change the default password for SSH:
+
+1. From a Windows 10 machine, `ssh predisanehr-admin@<ip_address_here>` in a
+   command prompt.
+2. When prompted for the password, the password is `predisanehr-admin-csc4620`
+3. Enter `passwd`.
+4. When prompted, enter the current password and a new password followed by
+   confirming it. It's Recommended to pick a strong password because anybody can
+   access all data if the password is ever compromised.
+6. Type `exit` to log out of the server.
 
 ## bahmni-specific documentation
 
-# bahmni-vagrant
-
-Management of Vagrant box using Packer.  Out-Of-The-Box bahmni on CentOS 6.8
-
-
-# Vagrant / Virtual Box Setup for Bahmni
-
-Please follow the steps mentioned in this document on wiki to setup Bahmni Vagrant Box on your machine:
-[Bahmni Vagrant Box Setup](https://bahmni.atlassian.net/wiki/display/BAH/Bahmni+Virtual+Box)
-
-
-# Understanding Packer (For Developers) **Unused for Predisan_EHR** 
-
-Packer is a tool provided by Hashicorp, for creating a Vagrant box out of template VMs. This repository
-contains Packer code for creating Bahmni vagrant boxes. For more details on understanding Packer please
-read: https://www.packer.io/intro/
-
-In Bahmni's case, we invoke Packer command with reference to file: [template.json](packer/template.json).
-It uses a CentOS VM as reference, and then runs appropriate scripts, including installing Bahmni and dev tools, etc.
-
-_Note: Packer runs on Bahmni CI server in pipeline "Release_To_Public" (manually triggered stage). One must trigger this stage after having marked relevant RPMs as "published" on bintray, so that when Packer runs, it picks up the LATEST published RPMs from bintray._
+TODO(cdmedrano): Update instructions on installing bahmni on clean centos7.

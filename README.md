@@ -114,7 +114,7 @@ The UI changes made (translations, fields, etc) are stored under
 1. `bahmni -i local stop`
 2. `cd /opt`
 3. `mv bahmni-web bahmni-web_old`
-4. `wget \
+4. `wget 
    https://carlos1001.com/predisanehr/predisanehr-prod-0.93/bahmni-web.tar.gz`
 5. `tar xf bahmni-web.tar.gz`
 6. `chown -R bahmni:bahmni bahmni-web`
@@ -169,7 +169,7 @@ First, stop all bahmni services by doing `bahmni -i local stop`.
 
 Edit the dumped sql files, and at the top, add the line `use <db_name>`, where
 <db_name> is the name of the database the file is restoring. For example, on top
-of the `openmrs.sql` file, add `use openmrs;`. Do the same with the
+of the `openmrs.sql` file, add the line `use openmrs;`. Do the same with the
 `bahmni_reports.sql` file as well.
 
 You can then pipe in the resulting sql files from `mysqldump` into `mysql`. For
